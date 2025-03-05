@@ -10,7 +10,7 @@ echo "正在安裝與配置..."
 
 # 更新系統並安裝 Docker & Docker Compose
 sudo apt update
-sudo apt install -y docker.io docker-compose nginx openssl
+sudo apt install -y docker.io docker-compose nginx openssl python3-dev python3-setuptools
 
 # 啟動 Docker 並設置開機啟動
 sudo systemctl start docker
