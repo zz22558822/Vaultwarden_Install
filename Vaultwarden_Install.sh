@@ -10,7 +10,14 @@ echo "正在安裝與配置..."
 
 # 更新系統並安裝 Docker & Docker Compose
 sudo apt update
-sudo apt install -y docker.io docker-compose nginx openssl python3-dev python3-setuptools
+sudo apt install -y docker.io nginx openssl curl
+
+# 更新 docker-compose V2
+#sudo curl -L $(curl -s https://api.github.com/repos/docker/compose/releases/latest | jq -r .assets[0].browser_download_url) -o /usr/local/bin/docker-compose
+sudo apt remove docker-compose
+sudo curl -L "https://github.com/docker/compose/releases/download/v2.16.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+
 
 # 啟動 Docker 並設置開機啟動
 sudo systemctl start docker
@@ -77,6 +84,12 @@ server {
     return 301 https://\$host\$request_uri;
 }
 EOF
+
+# 檢查並刪除已存在的符號連結
+if [ -L "/etc/nginx/sites-enabled/vaultwarden" ]; then
+    echo "正在刪除舊的符號連結..."
+    sudo rm -f /etc/nginx/sites-enabled/vaultwarden
+fi
 
 # 啟用 Nginx 設置
 sudo ln -s /etc/nginx/sites-available/vaultwarden /etc/nginx/sites-enabled/
