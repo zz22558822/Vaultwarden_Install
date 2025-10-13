@@ -48,34 +48,10 @@ EOF
 # 啟動 Vaultwarden
 sudo docker-compose up -d
 
-# 建立 SSL 憑證目錄並生成自簽證書(包含 SAN 的憑證)
+# 建立 SSL 憑證目錄並生成自簽證書
 sudo mkdir -p /opt/SSL
 cd /opt/SSL
-
-cat <<EOF | sudo tee /opt/SSL/san.cnf
-[ req ]
-default_bits = 4096
-prompt = no
-default_md = sha256
-req_extensions = req_ext
-distinguished_name = dn
-
-[ dn ]
-C = TW
-ST = Taiwan
-L = Taichung
-O = Vaultwarden Local
-OU = IT
-CN = $DOMAIN
-
-[ req_ext ]
-subjectAltName = @alt_names
-
-[ alt_names ]
-DNS.1 = $DOMAIN
-EOF
-
-sudo openssl req -x509 -newkey rsa:4096 -keyout private.key -out certificate.crt -days 36500 -nodes -config san.cnf -extensions req_ext
+sudo openssl req -x509 -newkey rsa:4096 -keyout private.key -out certificate.crt -days 36500 -nodes -subj "/CN=$DOMAIN"
 
 # 設置適當的權限
 sudo chmod 600 private.key
@@ -127,19 +103,8 @@ sudo systemctl restart nginx
 sudo docker restart vaultwarden
 
 echo ""
-echo "=========================================================="
-echo "Vaultwarden 安裝完成！"
-echo "=========================================================="
+echo "※※※ 若為自簽名則無法使用應用程式版本僅能使用 Web ※※※"
+echo "※※※ 新辦帳號後請進入後台模式關閉【Allow new signups】※※※"
 echo ""
-echo "請務必執行以下重要步驟："
-echo ""
-echo "1. 匯入根憑證："
-echo "   將 /opt/SSL/certificate.crt 檔案複製到您的所有客戶端設備，"
-echo "   並且把 certificate.crt 檔案匯入為 **受信任的根憑證**。"
-echo ""
-echo "2. 存取位址："
-echo "   Vaultwarden 服務: https://$DOMAIN"
-echo "   Vaultwarden 後台管理: https://$DOMAIN/admin"
-echo ""
-echo "※※※ 新辦帳號後請立即進入後台管理模式，關閉【Allow new signups】※※※"
-echo "=========================================================="
+echo "Vaultwarden 安裝完成！請訪問: https://$DOMAIN"
+echo "Vaultwarden 後台模式: https://$DOMAIN/admin"
